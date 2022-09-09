@@ -103,6 +103,119 @@ static NSInteger const UIAlertControllerBlocksFirstOtherButtonIndex = 2;
     
     return controller;
 }
+    
+// Custom code to support showing an alert with a UITextField
+
++ (instancetype)showInViewController:(UIViewController *)viewController
+                           withTitle:(NSString *)title
+                             message:(NSString *)message
+                      preferredStyle:(UIAlertControllerStyle)preferredStyle
+                          textToEdit:(NSString *)text
+                         placeholder:(NSString *)placeholder
+                     isPasswordField:(BOOL)isPasswordField
+                   cancelButtonTitle:(NSString *)cancelButtonTitle
+              destructiveButtonTitle:(NSString *)destructiveButtonTitle
+                   otherButtonTitles:(NSArray *)otherButtonTitles
+  popoverPresentationControllerBlock:(void(^)(UIPopoverPresentationController *popover))popoverPresentationControllerBlock
+                            tapBlock:(UIAlertControllerTextViewCompletionBlock)tapBlock
+{
+    UIAlertController *strongController = [self alertControllerWithTitle:title
+                                                                 message:message
+                                                          preferredStyle:preferredStyle];
+    
+    __weak UIAlertController *controller = strongController;
+    
+    if (cancelButtonTitle) {
+        UIAlertAction *cancelAction = [UIAlertAction actionWithTitle:cancelButtonTitle
+                                                               style:UIAlertActionStyleCancel
+                                                             handler:^(UIAlertAction *action){
+                                                                 if (tapBlock) {
+                                                                     NSString* text = @"";
+                                                                     if ([controller.textFields count] > 0) {
+                                                                         text = [controller.textFields objectAtIndex:0].text;
+                                                                     }
+                                                                     tapBlock(controller, action, UIAlertControllerBlocksCancelButtonIndex, text);
+                                                                 }
+                                                             }];
+        [controller addAction:cancelAction];
+    }
+    
+    if (destructiveButtonTitle) {
+        UIAlertAction *destructiveAction = [UIAlertAction actionWithTitle:destructiveButtonTitle
+                                                                    style:UIAlertActionStyleDestructive
+                                                                  handler:^(UIAlertAction *action){
+                                                                      if (tapBlock) {
+                                                                          NSString* text = @"";
+                                                                          if ([controller.textFields count] > 0) {
+                                                                              text = [controller.textFields objectAtIndex:0].text;
+                                                                          }
+                                                                          tapBlock(controller, action, UIAlertControllerBlocksDestructiveButtonIndex, text);
+                                                                      }
+                                                                  }];
+        [controller addAction:destructiveAction];
+    }
+    
+    for (NSUInteger i = 0; i < otherButtonTitles.count; i++) {
+        NSString *otherButtonTitle = otherButtonTitles[i];
+        
+        UIAlertAction *otherAction = [UIAlertAction actionWithTitle:otherButtonTitle
+                                                              style:UIAlertActionStyleDefault
+                                                            handler:^(UIAlertAction *action){
+                                                                if (tapBlock) {
+                                                                    NSString* text = @"";
+                                                                    if ([controller.textFields count] > 0) {
+                                                                        text = [controller.textFields objectAtIndex:0].text;
+                                                                    }
+                                                                    tapBlock(controller, action, UIAlertControllerBlocksFirstOtherButtonIndex + i, text);
+                                                                }
+                                                            }];
+        [controller addAction:otherAction];
+    }
+    
+    if (preferredStyle == UIAlertControllerStyleAlert) {
+        [controller addTextFieldWithConfigurationHandler:^(UITextField * _Nonnull textField) {
+            if (!text || [text length] ) {
+                textField.text = text;
+            }
+            textField.placeholder = placeholder;
+            textField.secureTextEntry = isPasswordField;
+        }];
+    }
+    
+    if (popoverPresentationControllerBlock) {
+        popoverPresentationControllerBlock(controller.popoverPresentationController);
+    }
+    
+    [viewController.uacb_topmost presentViewController:controller animated:YES completion:nil];
+    
+    return controller;
+}
+
++ (nonnull instancetype)showAlertInViewController:(nonnull UIViewController *)viewController
+                                        withTitle:(nullable NSString *)title
+                                          message:(nullable NSString *)message
+                                       textToEdit:(nullable NSString *)text
+                                      placeholder:(nullable NSString *)placeholder
+                                  isPasswordField:(BOOL)isPasswordField
+                                cancelButtonTitle:(nullable NSString *)cancelButtonTitle
+                           destructiveButtonTitle:(nullable NSString *)destructiveButtonTitle
+                                otherButtonTitles:(nullable NSArray *)otherButtonTitles
+                                         tapBlock:(nullable UIAlertControllerTextViewCompletionBlock)tapBlock {
+    return [self showInViewController:viewController
+                            withTitle:title
+                              message:message
+                       preferredStyle:UIAlertControllerStyleAlert
+                           textToEdit:text
+                          placeholder:placeholder
+                      isPasswordField:isPasswordField
+                    cancelButtonTitle:cancelButtonTitle
+               destructiveButtonTitle:destructiveButtonTitle
+                    otherButtonTitles:otherButtonTitles
+   popoverPresentationControllerBlock:nil
+                             tapBlock:tapBlock];
+}
+
+// End custom code
 
 + (instancetype)showAlertInViewController:(UIViewController *)viewController
                                 withTitle:(NSString *)title

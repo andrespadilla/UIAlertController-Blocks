@@ -32,6 +32,7 @@
 typedef void (^UIAlertControllerPopoverPresentationControllerBlock) (UIPopoverPresentationController * __nonnull popover);
 #endif
 typedef void (^UIAlertControllerCompletionBlock) (UIAlertController * __nonnull controller, UIAlertAction * __nonnull action, NSInteger buttonIndex);
+typedef void (^UIAlertControllerTextViewCompletionBlock) (UIAlertController * __nonnull controller, UIAlertAction * __nonnull action, NSInteger buttonIndex, NSString * __nonnull resultText);
 
 @interface UIAlertController (Blocks)
 
@@ -55,6 +56,20 @@ typedef void (^UIAlertControllerCompletionBlock) (UIAlertController * __nonnull 
                                 otherButtonTitles:(nullable NSArray *)otherButtonTitles
                                          tapBlock:(nullable UIAlertControllerCompletionBlock)tapBlock;
 
+// Custom code to support showing an alert with a UITextField
+
++ (nonnull instancetype)showAlertInViewController:(nonnull UIViewController *)viewController
+                                        withTitle:(nullable NSString *)title
+                                          message:(nullable NSString *)message
+                                       textToEdit:(nullable NSString *)text
+                                      placeholder:(nullable NSString *)placeholder
+                                  isPasswordField:(BOOL)isPasswordField
+                                cancelButtonTitle:(nullable NSString *)cancelButtonTitle
+                           destructiveButtonTitle:(nullable NSString *)destructiveButtonTitle
+                                otherButtonTitles:(nullable NSArray *)otherButtonTitles
+                                         tapBlock:(nullable UIAlertControllerTextViewCompletionBlock)tapBlock;
+
+// End custom code
 
 + (nonnull instancetype)showActionSheetInViewController:(nonnull UIViewController *)viewController
                                               withTitle:(nullable NSString *)title
